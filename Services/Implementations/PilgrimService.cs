@@ -40,7 +40,22 @@ public class PilgrimService : IPilgrimService
 
     public async Task UpdatePilgrimAsync(Pilgrim pilgrim)
     {
-        await _pilgrimRepository.UpdateAsync(pilgrim);
+        // 1. Находим паломника, который уже есть в базе
+        var existingPilgrim = await _pilgrimRepository.GetByIdAsync(pilgrim.Id);
+
+        if (existingPilgrim != null)
+        {
+            // 2. Вручную обновляем поля
+            existingPilgrim.FullName = pilgrim.FullName;
+            existingPilgrim.PassportNumber = pilgrim.PassportNumber;
+            existingPilgrim.PhoneNumber = pilgrim.PhoneNumber;
+            existingPilgrim.GroupId = pilgrim.GroupId;
+            existingPilgrim.FlightId = pilgrim.FlightId;
+            existingPilgrim.PaymentStatus = pilgrim.PaymentStatus; // Вот здесь статус и обновится!
+
+            // 3. Сохраняем через репозиторий
+            await _pilgrimRepository.UpdateAsync(existingPilgrim);
+        }
     }
 
     public async Task DeletePilgrimAsync(int id)

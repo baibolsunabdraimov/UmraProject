@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UmrahTourApi.Models;
 using UmrahTourApi.Services.Implementations;
+using UmrahTourApi.Services.Interfaces;
 
 namespace UmrahTourApi.Controllers;
 

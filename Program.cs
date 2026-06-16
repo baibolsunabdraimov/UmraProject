@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using UmrahTourApi.Data;
 using UmrahTourApi.Repositories.Implementations;
 using UmrahTourApi.Repositories.Interfaces;
@@ -32,7 +33,12 @@ builder.Services.AddScoped<ILeaderService, LeaderService>();
 builder.Services.AddScoped<IUserRequestService, UserRequestService>();
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 // Swagger configuration
 builder.Services.AddEndpointsApiExplorer();

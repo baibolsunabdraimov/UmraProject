@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UmrahTourApi.Data;
+using UmrahTourApi.Models; // Убедись, что это пространство имен верное
 using UmrahTourApi.Services.Interfaces;
 
 namespace UmrahTourApi.Services.Implementations;
@@ -17,28 +18,33 @@ public class StatsService : IStatsService
     {
         var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
 
+        // 1. Получаем данные во временный список (Memory), чтобы избежать ошибок LINQ to Entities
         var flightsData = await _context.Flights
             .Include(f => f.Pilgrims)
             .Where(f => f.DepartureTime >= sixMonthsAgo)
+            .ToListAsync();
+
+        // Если данных нет совсем — возвращаем пустой объект, чтобы не было ошибки 500
+        if (!flightsData.Any())
+            return new SalesStatsDto { MonthlySales = new List<MonthlySales>(), TotalRevenue = 0 };
+
+        var monthlySales = flightsData
             .SelectMany(f => f.Pilgrims.Select(p => new
             {
                 FlightDate = f.DepartureTime,
                 FlightPrice = f.TicketPrice
             }))
-            .ToListAsync();
-
-        var monthlySales = flightsData
             .GroupBy(x => new { x.FlightDate.Year, x.FlightDate.Month })
             .Select(g => new MonthlySales
             {
                 Year = g.Key.Year,
                 Month = g.Key.Month,
+                // Используем культуру для названия месяца
                 MonthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM"),
                 Revenue = g.Sum(x => x.FlightPrice),
                 TicketCount = g.Count()
             })
-            .OrderBy(x => x.Year)
-            .ThenBy(x => x.Month)
+            .OrderBy(x => x.Year).ThenBy(x => x.Month)
             .ToList();
 
         return new SalesStatsDto
@@ -55,11 +61,13 @@ public class StatsService : IStatsService
         var pilgrimsData = await _context.Pilgrims
             .Include(p => p.Flight)
             .Where(p => p.Flight != null && p.Flight.DepartureTime >= sixMonthsAgo)
-            .Select(p => new { p.Flight!.DepartureTime })
             .ToListAsync();
 
+        if (!pilgrimsData.Any())
+            return new PilgrimsStatsDto { MonthlyPilgrims = new List<MonthlyPilgrims>(), TotalPilgrims = 0 };
+
         var monthlyPilgrims = pilgrimsData
-            .GroupBy(x => new { x.DepartureTime.Year, x.DepartureTime.Month })
+            .GroupBy(x => new { x.Flight!.DepartureTime.Year, x.Flight.DepartureTime.Month })
             .Select(g => new MonthlyPilgrims
             {
                 Year = g.Key.Year,
@@ -67,8 +75,7 @@ public class StatsService : IStatsService
                 MonthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM"),
                 Count = g.Count()
             })
-            .OrderBy(x => x.Year)
-            .ThenBy(x => x.Month)
+            .OrderBy(x => x.Year).ThenBy(x => x.Month)
             .ToList();
 
         return new PilgrimsStatsDto
@@ -82,17 +89,19 @@ public class StatsService : IStatsService
     {
         var groups = await _context.UmrahGroups
             .Include(g => g.Pilgrims)
-            .Where(g => g.Status != Models.GroupStatus.Completed)
+            .Where(g => g.Status != GroupStatus.Completed) // Убедись, что GroupStatus виден тут
             .ToListAsync();
+
+        if (!groups.Any()) return new List<GroupOccupancyDto>();
 
         return groups.Select(g => new GroupOccupancyDto
         {
             GroupId = g.Id,
             GroupName = g.Name,
             TotalSeats = g.MaxSeats,
-            OccupiedSeats = g.Pilgrims.Count,
-            OccupancyPercentage = g.MaxSeats > 0 
-                ? Math.Round((double)g.Pilgrims.Count / g.MaxSeats * 100, 2) 
+            OccupiedSeats = (g.Pilgrims != null) ? g.Pilgrims.Count : 0,
+            OccupancyPercentage = g.MaxSeats > 0
+                ? Math.Round((double)((g.Pilgrims != null) ? g.Pilgrims.Count : 0) / g.MaxSeats * 100, 2)
                 : 0
         }).ToList();
     }

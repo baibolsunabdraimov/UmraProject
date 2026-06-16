@@ -2,9 +2,9 @@ namespace UmrahTourApi.Models;
 
 public enum PaymentStatus
 {
-    Unpaid,
-    Partial,
-    Paid
+    Unpaid = 0,
+    PartiallyPaid = 1,
+    Paid = 2
 }
 
 public class Pilgrim
