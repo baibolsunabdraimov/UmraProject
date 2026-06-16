@@ -1,0 +1,14 @@
+
+.vs/
+[Bb]in/
+[Oo]bj/
+out/
+
+# База данных
+*.db
+*.db-shm
+*.db-wal
+
+# Логи и секреты
+*.log
+appsettings.Development.json
