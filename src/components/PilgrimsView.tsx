@@ -87,8 +87,9 @@ export default function PilgrimsView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) return;
-
+    
     const payload = {
+      id: editingPilgrim ? editingPilgrim.id : 0,
       fullName,
       passportNumber: passportNumber.trim(),
       phoneNumber: phoneNumber.trim(),
@@ -99,16 +100,16 @@ export default function PilgrimsView() {
 
     try {
       if (editingPilgrim) {
+        // Мы отправляем id и в URL, и в данных (data: payload)
         await updateMutation.mutateAsync({ id: editingPilgrim.id, data: payload });
       } else {
         await createMutation.mutateAsync(payload);
       }
       setIsModalOpen(false);
     } catch (err) {
-      console.error(err);
+      console.error("Ошибка при сохранении:", err);
     }
   };
-
   const handleDelete = async (id: number) => {
     if (confirm('Вы действительно хотите удалить данного паломника из системы?')) {
       try {

@@ -7,7 +7,8 @@ import React, { useState } from 'react';
 import { 
   useUserRequests, 
   useUpdateUserRequestStatus, 
-  useDeleteUserRequest 
+  useDeleteUserRequest ,
+  useApproveUserRequest
 } from '../lib/api';
 import { 
   UserRequest, 
@@ -30,7 +31,8 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function UserRequestsAdminView() {
   const { data: requests, isLoading: requestsLoading, error } = useUserRequests();
-  const updateStatusMutation = useUpdateUserRequestStatus();
+  const approveMutation = useApproveUserRequest(); // Для одобрения
+  const updateStatusMutation = useUpdateUserRequestStatus(); // Оставляем для "Отклонить"
   const deleteMutation = useDeleteUserRequest();
 
   // Search and filter status values
@@ -44,13 +46,11 @@ export default function UserRequestsAdminView() {
   const handleApprove = async (id: number) => {
     setLocalError(null);
     try {
-      await updateStatusMutation.mutateAsync({
-        id,
-        status: RequestStatus.Approved
-      });
+      // Теперь вызываем специальную мутацию одобрения
+      await approveMutation.mutateAsync(id);
     } catch (err: any) {
       console.error(err);
-      setLocalError(err.response?.data?.message || 'Ошибка одобрения заявки. Возможно, лимит мест забит.');
+      setLocalError(err.response?.data?.message || 'Ошибка одобрения. Проверьте, существует ли группа.');
     }
   };
 

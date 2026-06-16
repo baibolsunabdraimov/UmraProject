@@ -26,6 +26,7 @@ import {
   ClipboardList,
   UserCheck
 } from 'lucide-react';
+import LeadersView from './components/LeadersView';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -168,6 +169,17 @@ export default function App() {
                     <Compass className="w-4 h-4 text-emerald-600 animate-spin-slow" />
                     Портал паломника (Форма)
                   </button>
+                  <button
+                    onClick={() => setActiveTab('leaders')}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-xs tracking-wide transition ${
+                      activeTab === 'portal' 
+                        ? 'bg-emerald-55 bg-emerald-50 text-emerald-800 border-emerald-100/30 font-semibold shadow-sm border' 
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
+                  >
+                    <Compass className="w-4 h-4 text-emerald-600 animate-spin-slow" />
+                    Лидеры
+                  </button>
                 </nav>
               </div>
 
@@ -220,13 +232,14 @@ export default function App() {
               </header>
 
               {/* Core Body Container */}
-              <div className="flex-1 p-6 overflow-y-auto max-w-7xl w-full mx-auto">
+              <div className="flex-1 p-7 overflow-y-auto max-w-7xl w-full mx-auto">
                 {activeTab === 'dashboard' && <DashboardView />}
                 {activeTab === 'groups' && <GroupsView />}
                 {activeTab === 'pilgrims' && <PilgrimsView />}
                 {activeTab === 'flights' && <FlightManagementView />}
                 {activeTab === 'requests' && <UserRequestsAdminView />}
                 {activeTab === 'portal' && <UserPortalView />}
+                {activeTab === 'leaders' && <LeadersView />}
               </div>
             </main>
           </div>

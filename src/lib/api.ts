@@ -14,7 +14,8 @@ import {
   PilgrimsStatsDto, 
   GroupOccupancyDto,
   UserRequest,
-  RequestStatus
+  RequestStatus,
+  Leader
 } from '../types';
 
 // Setup custom Axios client configured with base URL
@@ -30,6 +31,11 @@ const apiClient = axios.create({
 // ==========================================================
 
 export const api = {
+
+  approveUserRequest: async (id: number): Promise<void> => {
+    // Мы стучимся в специальный эндпоинт /approve, который мы создали на бекенде
+    await apiClient.post(`/api/UserRequests/${id}/approve`);
+  },
   // Stats
   getSalesStats: async (): Promise<SalesStatsDto> => {
     const res = await apiClient.get<SalesStatsDto>('/api/Stats/sales');
@@ -151,11 +157,22 @@ export const api = {
   },
   deleteUserRequest: async (id: number): Promise<void> => {
     await apiClient.delete(`/api/UserRequests/${id}`);
-  }
-  //liders
+  },
+  // Leaders (Ажы башчы)
   getLeaders: async (): Promise<Leader[]> => {
     const res = await apiClient.get<Leader[]>('/api/Leaders');
     return res.data;
+  },
+  createLeader: async (leader: Partial<Leader>): Promise<Leader> => {
+    const res = await apiClient.post<Leader>('/api/Leaders', leader);
+    return res.data;
+  },
+  updateLeader: async (payload: { id: number; data: Partial<Leader> }): Promise<Leader> => {
+    const res = await apiClient.put<Leader>(`/api/Leaders/${payload.id}`, payload.data);
+    return res.data;
+  },
+  deleteLeader: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/Leaders/${id}`);
   },
 };
 
@@ -388,6 +405,18 @@ export function useCreateUserRequest() {
     },
   });
 }
+export function useApproveUserRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.approveUserRequest,
+    onSuccess: () => {
+      // Обновляем всё: и заявки, и список паломников, и статистику (графики)
+      queryClient.invalidateQueries({ queryKey: ['userRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pilgrims'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+}
 
 export function useUpdateUserRequestStatus() {
   const queryClient = useQueryClient();
@@ -412,10 +441,43 @@ export function useDeleteUserRequest() {
   });
 }
 
-//liders hook
+// Leaders hooks
 export function useLeaders() {
   return useQuery({
     queryKey: ['leaders'],
     queryFn: api.getLeaders,
+  });
+}
+
+export function useCreateLeader() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.createLeader,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaders'] });
+    },
+  });
+}
+
+export function useUpdateLeader() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.updateLeader,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaders'] });
+      // Обновляем группы, так как там отображаются имена лидеров
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+  });
+}
+
+export function useDeleteLeader() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteLeader,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaders'] });
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
   });
 }
