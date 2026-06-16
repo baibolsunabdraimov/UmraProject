@@ -1,0 +1,6 @@
+{
+  "name": "Umrah Operator Panel",
+  "description": "A professional panel for Umrah group planning, pilgrim accounts, flight distribution, and sales analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
