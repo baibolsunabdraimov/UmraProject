@@ -19,10 +19,8 @@ builder.Services.AddScoped<IUmrahGroupRepository, UmrahGroupRepository>();
 builder.Services.AddScoped<IPilgrimRepository, PilgrimRepository>();
 builder.Services.AddScoped<IFlightRepository, FlightRepository>();
 builder.Services.AddScoped<IMeetingRepository, MeetingRepository>();
-
-
 builder.Services.AddScoped<ILeaderRepository, LeaderRepository>();
-builder.Services.AddScoped<ILeaderService, LeaderService>();
+builder.Services.AddScoped<IUserRequestRepository, UserRequestRepository>();
 
 // Services
 builder.Services.AddScoped<IUmrahGroupService, UmrahGroupService>();
@@ -30,6 +28,8 @@ builder.Services.AddScoped<IPilgrimService, PilgrimService>();
 builder.Services.AddScoped<IFlightService, FlightService>();
 builder.Services.AddScoped<IMeetingService, MeetingService>();
 builder.Services.AddScoped<IStatsService, StatsService>();
+builder.Services.AddScoped<ILeaderService, LeaderService>();
+builder.Services.AddScoped<IUserRequestService, UserRequestService>();
 
 // Controllers
 builder.Services.AddControllers();

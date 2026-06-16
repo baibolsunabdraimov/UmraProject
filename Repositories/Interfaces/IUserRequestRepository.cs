@@ -1,6 +1,8 @@
-﻿namespace UmrahTourApi.Repositories.Interfaces
+﻿using UmrahTourApi.Models;
+
+namespace UmrahTourApi.Repositories.Interfaces;
+
+public interface IUserRequestRepository : IRepository<UserRequest>
 {
-    public interface IUserRequestRepository
-    {
-    }
+    Task UpdateStatusAsync(int id, RequestStatus status);
 }
